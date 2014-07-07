@@ -74,6 +74,7 @@ module.exports = function(grunt) {
                   index--;
                   continue;
                 }
+                if ( /[,]$/.test(lines[each]) === false && /},/.test(lines[Number(Number(each) + Number(1))]) ) continue;
                 if ( /[,]$/.test(lines[each])  === false ){
                   outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     );
                 }
