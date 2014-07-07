@@ -50,43 +50,34 @@ module.exports = function(grunt) {
         }
       }).map(function(filepath) {
         // Read file source.
-            var outFile = [];            
-            var read = grunt.file.read(filepath);            
-
+            var outFile = [];
+            var read = grunt.file.read(filepath);
             var lines = read.split(/\r/);
-            
             var index=1;
+
+
             for (var each in lines){
-              outFile.push(lines[each]);
-              
+              index++;
               try {
-                var spaces = /^\s+/.exec(lines[each])[0].length;
+                var spaceCount = /^\s+/.exec(lines[each])[0].length;
+
+                outFile.push(lines[each]);
+
+                if ( /\/\/|,$|return|^\s*$/.test(lines[each]) )   continue;
+                else if ( /function|if|else|while/.test(lines[each]) ){
+                  outFile.push( exports.whiteSpace(spaceCount+2) + 'console.log(' + 'line: ' + index + ')');
+                }
+                else {
+                 outFile.push( exports.whiteSpace(spaceCount) + 'console.log(' + 'line: ' + index + ')');
+                }
+
                 index++;
-                console.log( /^\s+/.exec(lines[each])[0].length ,  /.[,]/.test(lines[each])  );
-                if ( /\/\//.test(lines[each])  ) continue;
-                if (/return/.test(lines[each]) || lines[each].match(/\s+/g).length===1   ||  /{/.test(lines[each]) ){
-                  if (/(if|while|function)/.test(lines[each])    ) {
-                    outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     );
-                  }
-                  if ( /{/.test(lines[each]) &&  /[;]$/.test(lines[each]) ){
-                    outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     ); 
-                  }
-                  index--;
-                  continue;
-                }
-                if ( /[,]$/.test(lines[each]) === false && /},/.test(lines[Number(Number(each) + Number(1))]) ) continue;
-                if ( /[,]$/.test(lines[each])  === false ){
-                  outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     );
-                }
-                else index--;
-                
               }
-              catch (e){console.log(e)}
+              catch (e){
+                index--;
+                console.log(e)
+              }
             }
-
-            // console.log(outFile);
-
-
 
             grunt.file.write('output.js', outFile.join('\r') );
 
