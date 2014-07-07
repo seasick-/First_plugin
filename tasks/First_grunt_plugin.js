@@ -8,6 +8,18 @@
 
 'use strict';
 
+exports.whiteSpace = function (length){
+  var space = ' ';
+  return (function(length){
+    var whiteSpace='';
+    for (var i=0; i<length; i++){
+      whiteSpace+=space;
+    }
+    return whiteSpace;
+  }(length));
+}
+
+
 module.exports = function(grunt) {
 
   // Please see the Grunt documentation for more information regarding task
@@ -42,13 +54,40 @@ module.exports = function(grunt) {
             var read = grunt.file.read(filepath);            
 
             var lines = read.split(/\r/);
-
+            
+            var index=1;
             for (var each in lines){
               outFile.push(lines[each]);
+              
+              try {
+                var spaces = /^\s+/.exec(lines[each])[0].length;
+                index++;
+                console.log( /^\s+/.exec(lines[each])[0].length ,  /.[,]/.test(lines[each])  );
+                if ( /\/\//.test(lines[each])  ) continue;
+                if (/return/.test(lines[each]) || lines[each].match(/\s+/g).length===1   ||  /{/.test(lines[each]) ){
+                  if (/(if|while|function)/.test(lines[each])    ) {
+                    outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     );
+                  }
+                  if ( /{/.test(lines[each]) &&  /[;]$/.test(lines[each]) ){
+                    outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     ); 
+                  }
+                  index--;
+                  continue;
+                }
+                if ( /[,]$/.test(lines[each])  === false ){
+                  outFile.push( exports.whiteSpace(spaces+2) + 'console.log(line: ' + String( Number(each) + Number(index) )   + ');'     );
+                }
+                else index--;
+                
+              }
+              catch (e){console.log(e)}
             }
 
-            console.log(outFile);
-            // grunt.file.write('output.txt', outFile);
+            // console.log(outFile);
+
+
+
+            grunt.file.write('output.js', outFile.join('\r') );
 
             return grunt.file.read(filepath);
       }).join(grunt.util.normalizelf(options.separator));
