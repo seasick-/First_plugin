@@ -19,6 +19,12 @@ exports.whiteSpace = function (length){
   }(length));
 }
 
+exports.test = function( param ){
+  return function() {
+    console.log ('test!:' + param);
+  }
+}
+
 
 module.exports = function(grunt) {
 
@@ -54,16 +60,26 @@ module.exports = function(grunt) {
             var read = grunt.file.read(filepath);
             var lines = read.split(/\r/);
             var index=1;
-
-
+            
             for (var each in lines){
               index++;
-              try {
-                var spaceCount = /^\s+/.exec(lines[each])[0].length;
 
+              try {
+                try {
+                  var spaceCount = /^\s+/.exec(lines[each])[0].length;  
+                }
+                catch(e){}
                 outFile.push(lines[each]);
 
-                if ( /\/\/|,$|return|^\s*$/.test(lines[each]) )   continue;
+                if ( /\/\/|,$|return|^\s*$/.test(lines[each]) ) continue;
+                else if ( /[)]$/.test(lines[each])  && /},/.test(lines[ Number(Number(each) + Number(1))])  ) continue;
+                else if ( /],/.test(lines[ Number(Number(each) + Number(1))]) )  continue;
+                else if ( /(:(([^{]*))|=(([^{]*)))/.test(lines[each])  ) continue;
+                else if ( /define|};/.test(lines[each])  )  continue;
+                else if ( /(^var).+?([{])/.test(lines[each]) ) {
+                  console.log('this');
+                  continue;
+                }
                 else if ( /function|if|else|while/.test(lines[each]) ){
                   outFile.push( exports.whiteSpace(spaceCount+2) + 'console.log(' + 'line: ' + index + ')');
                 }
