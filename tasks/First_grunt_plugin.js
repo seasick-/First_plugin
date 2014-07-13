@@ -74,12 +74,10 @@ module.exports = function(grunt) {
                 if ( /\/\/|,$|return|^\s*$/.test(lines[each]) ) continue;
                 else if ( /[)]$/.test(lines[each])  && /},/.test(lines[ Number(Number(each) + Number(1))])  ) continue;
                 else if ( /],/.test(lines[ Number(Number(each) + Number(1))]) )  continue;
-                else if ( /(:(([^{]*))|=(([^{]*)))/.test(lines[each])  ) continue;
+                else if (  /[^'].+[']$/.test(lines[each])  )    continue;
+                else if ( /:([^{]*)|(^var).+=([^{]*)/.test(lines[each].trim()) && !/[^\W].+:([^{]*)/.test(lines[each].trim())  ) continue;
+                else if ( /:([^function]*)/.test(lines[ Number(Number(each) + Number(1))])  )   continue;
                 else if ( /define|};/.test(lines[each])  )  continue;
-                else if ( /(^var).+?([{])/.test(lines[each]) ) {
-                  console.log('this');
-                  continue;
-                }
                 else if ( /function|if|else|while/.test(lines[each]) ){
                   outFile.push( exports.whiteSpace(spaceCount+2) + 'console.log(' + 'line: ' + index + ')');
                 }
